@@ -1,11 +1,11 @@
 ﻿using Microsoft.ML.Data;
 namespace NeuronNetworkTest.Data
 {
-    internal class InputData
+    public class Input
     {
-        public InputData(){ }
+        public Input(){ }
 
-        public InputData(string category, string word)
+        public Input(string category, string word)
         {
             Category = category;
             Word = word;

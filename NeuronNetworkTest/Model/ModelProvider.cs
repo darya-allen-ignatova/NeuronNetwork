@@ -30,7 +30,7 @@ namespace NeuronNetworkTest.Model
             IDataView trainingDataView = mlContext.Data.LoadFromEnumerable(GetDataFromExcel(trainingSheetNumber));
 
             //Creating pipeline
-            var trainingPipeline = GetTrainingPipeline();
+            IEstimator<ITransformer> trainingPipeline = GetTrainingPipeline();
 
             //Show metrics of made pipeline
             PrintAccuracyOfModel(trainingDataView, trainingPipeline);
@@ -48,12 +48,13 @@ namespace NeuronNetworkTest.Model
             var dataPipeline = mlContext.Transforms.Conversion.MapValueToKey("Category", "Category") // Category name to key
                                     .Append(mlContext.Transforms.Text.FeaturizeText("Word_vector", "Word")) // words to vector in new column
                                     .Append(mlContext.Transforms.CopyColumns("Features", "Word_vector")) // new column using during training
-                                    .Append(mlContext.Transforms.NormalizeMinMax("Features", "Features")) // values normalization
-                                    .AppendCacheCheckpoint(mlContext); // for training cached data
+                                    .Append(mlContext.Transforms.NormalizeMinMax("Features", "Features"))
+                                    //.Append(mlContext.MulticlassClassification.Trainers.LbfgsMaximumEntropy(labelColumnName: "Category", featureColumnName: "Features"))
+                                    .AppendCacheCheckpoint(mlContext);
 
-            var trainer = GetTrainer_AveragedPerceptron();
+            var trainer = GetTrainer_SgdCalibrated();
             var trainingPipeline = dataPipeline.Append(trainer); // creating training pipeline
-            return trainingPipeline;
+            return dataPipeline;
         }
 
         private EstimatorChain<KeyToValueMappingTransformer> GetTrainer_AveragedPerceptron()
@@ -72,6 +73,18 @@ namespace NeuronNetworkTest.Model
                                               FeatureColumnName = "Features"
                                           }), labelColumnName: "Category")
                        .Append(mlContext.Transforms.Conversion.MapKeyToValue("PredictedLabel", "PredictedLabel"));
+        }
+
+        private EstimatorChain<KeyToValueMappingTransformer> GetTrainer_LinearSvm()
+        {
+            return mlContext.MulticlassClassification.Trainers.OneVersusAll(mlContext.BinaryClassification.Trainers.LinearSvm(labelColumnName: "Category", featureColumnName: "Features"), labelColumnName: "Category")
+                            .Append(mlContext.Transforms.Conversion.MapKeyToValue("PredictedLabel", "PredictedLabel"));
+        }
+
+        private EstimatorChain<KeyToValueMappingTransformer> GetTrainer_SgdCalibrated()
+        {
+             return mlContext.MulticlassClassification.Trainers.OneVersusAll(mlContext.BinaryClassification.Trainers.SgdCalibrated(labelColumnName: "Category", featureColumnName: "Features"), labelColumnName: "Category")
+                                      .Append(mlContext.Transforms.Conversion.MapKeyToValue("PredictedLabel", "PredictedLabel"));
         }
 
         private void PrintAccuracyOfModel(IDataView trainingDataView, IEstimator<ITransformer> trainingPipeline)

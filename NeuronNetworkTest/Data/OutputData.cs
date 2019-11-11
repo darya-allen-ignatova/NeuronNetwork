@@ -2,10 +2,25 @@
 
 namespace NeuronNetworkTest.Data
 {
-    internal class OutputData
+    public class Output
     {
         [ColumnName("PredictedLabel")]
-        public string Prediction { get; set; }
+        public uint Prediction { get; set; }
+
+        /*public string Category
+        {
+            get
+            {
+                switch (Prediction)
+                {
+                    case 1: return "noun";
+                    case 2: return "adverb";
+                    case 3: return "adjective";
+                }
+
+                return null;
+            }
+        }*/
         public float[] Score { get; set; }
     }
 }

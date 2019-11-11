@@ -5,7 +5,7 @@ using System.IO;
 
 namespace DataAccessApp
 {
-    internal static class ExcelDataProvider
+    public static class ExcelDataProvider
     {
         public static List<InputData> GetData(string path, int worksheetIndex)
         {

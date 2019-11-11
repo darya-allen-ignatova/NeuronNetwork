@@ -10,8 +10,8 @@ namespace NeuronNetworkTest
     class Program
     {
         const string dataPathCSV = @"C:\Users\Дарья\Desktop\exceldata.csv";
-        const string dataPath = @"C:\Users\Дарья\Desktop\exceldataAVN.xlsx";
-        const string modelPath = @"C:\Users\Дарья\Desktop\MLModel.zip";
+        const string dataPath = @"C:\Users\Дарья\Desktop\AdverbNoun.xlsx";
+        const string modelPath = @"C:\Users\Дарья\Desktop\MultiModel.zip";
         const int predictDataSheetNumber = 1;
 
         static void Main(string[] args)

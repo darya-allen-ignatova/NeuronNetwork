@@ -3,6 +3,7 @@ using Microsoft.ML;
 using NeuronNetworkTest.Data;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NeuronNetworkTest
 {
@@ -12,16 +13,19 @@ namespace NeuronNetworkTest
         {
             MLContext mlContext = new MLContext();
 
-            List<InputData> input = ExcelDataProvider.GetData(dataPath, predictDataSheetNumber);
-            IDataView dataView = mlContext.Data.LoadFromEnumerable<InputData>(input);
-            IEnumerable<InputData> samples = mlContext.Data.CreateEnumerable<InputData>(dataView, false);
+            List<InputData> inputs = ExcelDataProvider.GetData(dataPath, predictDataSheetNumber);
+            List<Input> input = new List<Input>();
+            inputs.ForEach(x => input.Add(new Input(x.Category, x.Word)));
+            IDataView dataView = mlContext.Data.LoadFromEnumerable<Input>(input);
+            IEnumerable<Input> samples = mlContext.Data.CreateEnumerable<Input>(dataView, false);
 
             Console.WriteLine("Predictions");
             foreach (var sample in samples)
             {
-                OutputData predictionResult = Predict(sample, modelPath);
+                Output predictionResult = Predict(sample, modelPath);
 
                 Console.WriteLine($"Word: {sample.Word}");
+                //Console.WriteLine($"\nActual Category: {sample.Category} \nPredicted Category: {predictionResult.Category}\nPredicted Category scores: [{String.Join(",", predictionResult.Score)}]\n\n");
                 Console.WriteLine($"\nActual Category: {sample.Category} \nPredicted Category: {predictionResult.Prediction}\nPredicted Category scores: [{String.Join(",", predictionResult.Score)}]\n\n");
 
             }
@@ -29,12 +33,12 @@ namespace NeuronNetworkTest
             Console.ReadKey();
         }
 
-        private static OutputData Predict(InputData input, string modelPath)
+        private static Output Predict(Input input, string modelPath)
         {
             MLContext mlContext = new MLContext();
-            var predictionEngine = mlContext.Model.CreatePredictionEngine<InputData, OutputData>(mlContext.Model.Load(modelPath, out var modelInputSchema));
+            var predictionEngine = mlContext.Model.CreatePredictionEngine<Input, Output>(mlContext.Model.Load(modelPath, out var modelInputSchema));
 
-            OutputData result = predictionEngine.Predict(input);
+            Output result = predictionEngine.Predict(input);
             return result;
         }
     }
